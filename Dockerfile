@@ -1,24 +1,24 @@
-# Use a full Python image with apt-get available
+# Use a full Python image
 FROM python:3.10-slim
 
-# Install git and git-lfs for large model support
+# Install git and git-lfs (for large model support)
 RUN apt-get update && apt-get install -y git git-lfs && git lfs install
 
-# Set working directory inside the container
+# Set working directory
 WORKDIR /app
 
-# Copy everything into the container
+# Copy everything from root into the container
 COPY . .
 
-# Pull large files tracked by Git LFS (like .joblib models)
-RUN git lfs pull
+# ✅ We remove "git lfs pull" since .git folder isn't copied into Docker
+# The models will already be present in your repo (via Git LFS pointer files)
 
-# Install Python dependencies
+# Install dependencies
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r backend/requirements.txt
 
-# Expose the backend port
+# Expose backend port
 EXPOSE 5000
 
-# Run FastAPI server via uvicorn
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
+# Start FastAPI via Uvicorn
+CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "5000"]
