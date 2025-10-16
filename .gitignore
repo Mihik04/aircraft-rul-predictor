@@ -59,7 +59,7 @@ lerna-debug.log*
 
 # DATA / MODELS
 
-*.joblib
+#*.joblib
 *.pkl
 *.csv
 *.xlsx
