@@ -79,3 +79,6 @@ desktop.ini
 *.ipynb
 __temp__/
 tmp/
+
+# Ignore large local model file
+backend/models/best_model_fd001.joblib
