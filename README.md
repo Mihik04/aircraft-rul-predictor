@@ -1,7 +1,7 @@
-<<<<<<< HEAD
+
 # aircraft-rul-predictor
 AI-powered aircraft subsystem health monitoring dashboard using FastAPI, Scikit-learn, and React.
-=======
+
 #  Aircraft Subsystem Health Monitoring Dashboard
 
 A full-stack predictive maintenance system that forecasts the **Remaining Useful Life (RUL)** of aircraft subsystems — **Engine**, **Hydraulics**, and **Landing Gear** — using machine learning models and a modern web dashboard.
@@ -194,4 +194,4 @@ uvicorn main:app --host 0.0.0.0 --port 10000
 ---
 
 > _“Predicting tomorrow’s failures today — making maintenance smarter, not harder.”_
->>>>>>> e70a89b (Initial commit - Aircraft Subsystem RUL Prediction Dashboard)
+
