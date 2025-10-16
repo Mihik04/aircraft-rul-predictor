@@ -1,0 +1,81 @@
+
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+*.pickle
+*.h5
+*.pt
+
+# Environment
+.env
+.env.local
+.env.*
+.DS_Store
+
+# IDE / System
+.vscode/
+.idea/
+*.bak
+*.swp
+*.swo
+
+# Build or test
+.pytest_cache/
+.mypy_cache/
+coverage/
+htmlcov/
+dist/
+build/
+
+
+# NODE / REACT FRONTEND
+
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/.next/
+frontend/.env
+frontend/.env.local
+frontend/.npmrc
+
+# Package manager lockfiles (optional — keep one)
+frontend/pnpm-lock.yaml
+frontend/yarn.lock
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+
+# DATA / MODELS
+
+*.joblib
+*.pkl
+*.csv
+*.xlsx
+datasets/
+models/__pycache__/
+
+
+# OS / EDITOR FILES
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# OPTIONAL: Jupyter or Temp Files
+
+.ipynb_checkpoints/
+*.ipynb
+__temp__/
+tmp/

@@ -1,0 +1,222 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * Tailwind CSS theme
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   * A different format will require also updating the theme in tailwind.config.ts.
+  */
+  :root {
+    --background: 205 62% 98%;
+    --foreground: 225 47% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 225 47% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 225 47% 12%;
+
+    --primary: 207 94% 45%;
+    --primary-foreground: 207 100% 98%;
+
+    --secondary: 204 45% 92%;
+    --secondary-foreground: 225 47% 16%;
+
+    --muted: 210 32% 88%;
+    --muted-foreground: 223 26% 42%;
+
+    --accent: 199 93% 58%;
+    --accent-foreground: 207 100% 98%;
+
+    --destructive: 4 84% 58%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 208 34% 85%;
+    --input: 208 34% 85%;
+    --ring: 207 94% 45%;
+
+    --radius: 1rem;
+
+    --sidebar-background: 206 45% 95%;
+    --sidebar-foreground: 225 47% 16%;
+    --sidebar-primary: 207 94% 45%;
+    --sidebar-primary-foreground: 207 100% 98%;
+    --sidebar-accent: 204 47% 92%;
+    --sidebar-accent-foreground: 225 47% 16%;
+    --sidebar-border: 208 34% 85%;
+    --sidebar-ring: 207 94% 45%;
+  }
+
+  .dark {
+    --background: 222 55% 10%;
+    --foreground: 210 40% 96%;
+
+    --card: 222 50% 12%;
+    --card-foreground: 210 40% 96%;
+
+    --popover: 222 50% 12%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 207 82% 62%;
+    --primary-foreground: 222 50% 12%;
+
+    --secondary: 222 38% 18%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 222 38% 22%;
+    --muted-foreground: 215 18% 70%;
+
+    --accent: 199 82% 58%;
+    --accent-foreground: 222 50% 12%;
+
+    --destructive: 6 68% 46%;
+    --destructive-foreground: 210 40% 96%;
+
+    --border: 222 38% 22%;
+    --input: 222 38% 22%;
+    --ring: 207 94% 65%;
+
+    --sidebar-background: 222 38% 14%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 207 82% 62%;
+    --sidebar-primary-foreground: 222 50% 12%;
+    --sidebar-accent: 222 34% 20%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 222 38% 22%;
+    --sidebar-ring: 207 94% 65%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Inter", sans-serif;
+    background-image:
+      radial-gradient(circle at 20% 20%, hsla(203, 100%, 82%, 0.35), transparent 55%),
+      radial-gradient(circle at 80% -10%, hsla(199, 100%, 78%, 0.35), transparent 55%),
+      linear-gradient(135deg, hsl(210 40% 99%), hsl(210 55% 96%));
+    background-attachment: fixed;
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(circle at 15% 20%, hsla(205, 80%, 30%, 0.45), transparent 55%),
+      radial-gradient(circle at 85% 0%, hsla(199, 80%, 35%, 0.45), transparent 55%),
+      linear-gradient(135deg, hsl(222 55% 8%), hsl(222 45% 15%));
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Rajdhani", sans-serif;
+    @apply tracking-wide text-foreground;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply relative bg-white/80 dark:bg-slate-900/70 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_25px_45px_-30px_rgba(15,23,42,0.35)] rounded-3xl;
+  }
+
+  .card-header-accent {
+    background: linear-gradient(
+        120deg,
+        hsla(205, 92%, 52%, 0.16),
+        hsla(199, 92%, 65%, 0.08)
+      ),
+      hsl(var(--card));
+    @apply border-b border-white/40 dark:border-white/10;
+  }
+
+  .radial-gauge {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background:
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.9) 0, rgba(255, 255, 255, 0.45) 55%, transparent 60%),
+      conic-gradient(
+        var(--gauge-color, hsl(var(--primary))) var(--gauge-value, 0deg),
+        rgba(15, 23, 42, 0.08) var(--gauge-value, 0deg)
+      );
+    box-shadow: inset 0 2px 6px rgba(15, 23, 42, 0.08), 0 12px 32px rgba(15, 23, 42, 0.12);
+  }
+
+  .radial-gauge::after {
+    content: "";
+    position: absolute;
+    inset: 12%;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: inset 0 1px 3px rgba(15, 23, 42, 0.12);
+  }
+
+  .radial-gauge__value {
+    position: relative;
+    font-family: "Rajdhani", sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .three-d-progress {
+    position: relative;
+    width: 100%;
+    height: 1.75rem;
+    border-radius: 9999px;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(226, 239, 255, 0.75));
+    box-shadow: inset 0 4px 8px rgba(15, 23, 42, 0.1), inset 0 -4px 6px rgba(255, 255, 255, 0.7), 0 16px 32px -20px rgba(15, 23, 42, 0.55);
+    overflow: hidden;
+  }
+
+  .three-d-progress::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0));
+    pointer-events: none;
+  }
+
+  .three-d-progress__bar {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, hsl(205 85% 52%), hsl(199 82% 58%));
+    box-shadow: inset 0 4px 8px rgba(255, 255, 255, 0.45), inset 0 -6px 10px rgba(15, 23, 42, 0.2);
+    transform-origin: left center;
+    transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+/* --- Smooth health color transition --- */
+.health-bar {
+  transition: all 0.8s ease-in-out;
+  border-radius: 9999px;
+  height: 12px;
+  background: linear-gradient(90deg, #16a34a, #facc15, #dc2626);
+  background-size: 300% 100%;
+}
+
+.health-bar.optimal {
+  background-position: 0% 50%;
+}
+
+.health-bar.monitor {
+  background-position: 50% 50%;
+}
+
+.health-bar.critical {
+  background-position: 100% 50%;
+}
+
