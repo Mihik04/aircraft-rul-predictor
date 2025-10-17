@@ -1,7 +1,7 @@
 # Use official slim Python image
 FROM python:3.10-slim
 
-# Install system dependencies (lightgbm + git-lfs)
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y git git-lfs libgomp1 && \
     git lfs install && \
@@ -10,19 +10,17 @@ RUN apt-get update && \
 # Set working directory
 WORKDIR /app
 
-# Copy backend files only (cleaner, faster)
+# Copy backend folder (including requirements + models)
 COPY backend ./backend
-COPY requirements.txt .
 COPY runtime.txt .
-COPY Dockerfile .
 
-# Install Python dependencies
+# Install dependencies from inside backend/
 RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install -r backend/requirements.txt
 
-# Expose port for FastAPI
+# Expose FastAPI port
 EXPOSE 5000
 
-# Run FastAPI backend from correct directory
+# Run from correct directory
 WORKDIR /app/backend
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
