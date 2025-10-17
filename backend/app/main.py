@@ -67,21 +67,29 @@ def predict_engine(payload: EngineInput):
 @app.post("/predict/hydraulics", response_model=RULResponse)
 def predict_hydraulics(payload: HydraulicsInput):
     try:
+        import pandas as pd
+        import numpy as np
+
+        # ✅ Use cached model (avoid reloading every request)
         if "hydraulics" not in _model_cache:
             _model_cache["hydraulics"] = load_model("hydraulics", MODELS_DIR)
         model = _model_cache["hydraulics"]
 
+        # ✅ Convert payload to DataFrame with column names
         data_dict = payload.model_dump()
         x = pd.DataFrame([data_dict])
 
+        # 🧠 Debug block
         print("\n--- HYD DEBUG ---")
         print("Input shape:", x.shape)
         print("First few values:", list(data_dict.items())[:5])
+
+        # ✅ Predict safely using DataFrame
         y = float(model.predict(x)[0])
         print("Predicted RUL (raw):", y)
         print("-----------------\n")
 
-        # Smart scaling (keep your logic)
+        # --- SMART HYDRAULIC RUL AUTO-NORMALIZATION ---
         if not hasattr(predict_hydraulics, "rul_history"):
             predict_hydraulics.rul_history = []
 
@@ -91,17 +99,21 @@ def predict_hydraulics(payload: HydraulicsInput):
 
         mean_rul = np.mean(predict_hydraulics.rul_history)
         std_rul = np.std(predict_hydraulics.rul_history)
+
         low_bound = max(80, mean_rul - 2 * std_rul)
         high_bound = min(120, mean_rul + 2 * std_rul)
+
         y_scaled = np.interp(y, [low_bound, high_bound], [60, 120])
         y_scaled = round(float(np.clip(y_scaled, 60, 120)), 2)
 
         print(f"[HYD SMART SCALE] raw={y:.2f}, mean={mean_rul:.2f}, std={std_rul:.2f}, scaled={y_scaled:.2f}")
+        # -------------------------------------------------------------
 
         return RULResponse(predicted_rul=y_scaled, model_version="agg_best_model")
 
     except Exception as e:
-        import traceback; traceback.print_exc()
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
 
