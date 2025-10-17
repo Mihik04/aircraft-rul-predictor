@@ -1,24 +1,25 @@
-# Use a full Python image
+# Use Python base image
 FROM python:3.10-slim
 
-# Install git and git-lfs (for large model support)
-RUN apt-get update && apt-get install -y git git-lfs && git lfs install
+# Install system dependencies
+# libgomp1 is needed for LightGBM
+RUN apt-get update && \
+    apt-get install -y git git-lfs libgomp1 && \
+    git lfs install && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
 
-# Copy everything from root into the container
+# Copy project files
 COPY . .
-
-# ✅ We remove "git lfs pull" since .git folder isn't copied into Docker
-# The models will already be present in your repo (via Git LFS pointer files)
 
 # Install dependencies
 RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r backend/requirements.txt
+RUN pip install -r requirements.txt
 
-# Expose backend port
+# Expose port for backend
 EXPOSE 5000
 
-# Start FastAPI via Uvicorn
-CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "5000"]
+# Run FastAPI app
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000"]
