@@ -1,0 +1,30 @@
+# Python / cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.env
+*.env
+
+# Node / frontend
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+
+# Model datasets (avoid re-upload unless changed)
+datasets/
+*.csv
+*.xlsx
+
+# Temporary / OS files
+.DS_Store
+Thumbs.db
+*.log
+
+# Git and build cache
+.git
+.gitignore
+.cache/
