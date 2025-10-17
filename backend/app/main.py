@@ -39,19 +39,14 @@ def health():
 @app.post("/predict/engine", response_model=RULResponse)
 def predict_engine(payload: EngineInput):
     try:
-        # Lazy-load model
-        if "engine" not in _model_cache:
-            _model_cache["engine"] = load_model("engine", MODELS_DIR)
-        model = _model_cache["engine"]
+        model = load_model("engine", MODELS_DIR)
+        x = engine_to_array(payload).reshape(1, -1)
 
-        # Convert payload to DataFrame (fix feature-name warning)
-        data_dict = payload.model_dump()
-        x = pd.DataFrame([data_dict])
-
-        # Debug
+        # 🧠 Debug block
         print("\n--- ENGINE DEBUG ---")
-        print("Payload:", data_dict)
-        print("Input shape:", x.shape)
+        print("Payload keys:", list(payload.model_dump().keys())[:10])
+        print("Input array shape:", x.shape)
+        print("First 5 scaled values:", x[0][:5])
         y = float(model.predict(x)[0])
         print("Predicted RUL:", y)
         print("---------------------\n")
@@ -67,42 +62,39 @@ def predict_engine(payload: EngineInput):
 @app.post("/predict/hydraulics", response_model=RULResponse)
 def predict_hydraulics(payload: HydraulicsInput):
     try:
-        import pandas as pd
-        import numpy as np
-
-        # ✅ Use cached model (avoid reloading every request)
-        if "hydraulics" not in _model_cache:
-            _model_cache["hydraulics"] = load_model("hydraulics", MODELS_DIR)
-        model = _model_cache["hydraulics"]
-
-        # ✅ Convert payload to DataFrame with column names
-        data_dict = payload.model_dump()
-        x = pd.DataFrame([data_dict])
+        model = load_model("hydraulics", MODELS_DIR)
+        x = hyd_to_array(payload).reshape(1, -1)
 
         # 🧠 Debug block
         print("\n--- HYD DEBUG ---")
         print("Input shape:", x.shape)
-        print("First few values:", list(data_dict.items())[:5])
-
-        # ✅ Predict safely using DataFrame
+        print("First 5 values:", x[0][:5])
         y = float(model.predict(x)[0])
         print("Predicted RUL (raw):", y)
         print("-----------------\n")
 
         # --- SMART HYDRAULIC RUL AUTO-NORMALIZATION ---
+        import numpy as np
+
+        # Keep short history of recent hydraulics predictions
         if not hasattr(predict_hydraulics, "rul_history"):
             predict_hydraulics.rul_history = []
 
         predict_hydraulics.rul_history.append(y)
+
+        # Keep only the last 100 predictions
         if len(predict_hydraulics.rul_history) > 100:
             predict_hydraulics.rul_history.pop(0)
 
+        # Compute dynamic range (mean ± std)
         mean_rul = np.mean(predict_hydraulics.rul_history)
         std_rul = np.std(predict_hydraulics.rul_history)
 
+        # Dynamic scaling bounds
         low_bound = max(80, mean_rul - 2 * std_rul)
         high_bound = min(120, mean_rul + 2 * std_rul)
 
+        # Rescale RUL into [60, 120] range for visualization
         y_scaled = np.interp(y, [low_bound, high_bound], [60, 120])
         y_scaled = round(float(np.clip(y_scaled, 60, 120)), 2)
 
@@ -121,15 +113,12 @@ def predict_hydraulics(payload: HydraulicsInput):
 @app.post("/predict/landing-gear", response_model=RULResponse)
 def predict_landing_gear(payload: LandingGearInput):
     try:
-        if "landing_gear" not in _model_cache:
-            _model_cache["landing_gear"] = load_model("landing_gear", MODELS_DIR)
-        model = _model_cache["landing_gear"]
+        model = load_model("landing_gear", MODELS_DIR)
+        x = lg_to_array(payload).reshape(1, -1)
 
-        data_dict = payload.model_dump()
-        x = pd.DataFrame([data_dict])
-
+        # 🧠 Debug block
         print("\n--- LG DEBUG ---")
-        print("Input:", x.to_dict(orient="records")[0])
+        print("Input:", x)
         y = float(model.predict(x)[0])
         print("Predicted RUL:", y)
         print("----------------\n")
