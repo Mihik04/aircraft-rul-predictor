@@ -1,11 +1,12 @@
 from pathlib import Path
 import joblib
 import requests
+import gc
 
 _cached = {}
 
-# ✅ Hugging Face direct download link for the big engine model
-HF_ENGINE_MODEL_URL = "https://huggingface.co/mihik12/aircraft-rul-models/resolve/main/best_model_fd001.joblib"
+# ✅ Hugging Face direct download link for engine model
+HF_ENGINE_MODEL_URL = "https://huggingface.co/mihik12/aircraft-rul-models/resolve/main/best_model_fd001_compressed.joblib"
 
 
 def _download_from_hf(url: str, target_path: Path):
@@ -20,9 +21,9 @@ def _download_from_hf(url: str, target_path: Path):
 
 
 def load_model(name: str, models_dir: Path):
-    """Load model, downloading from HF only for the engine model."""
+    """Load model; for engine, download from HF if missing."""
     mapping = {
-        "engine": "best_model_fd001.joblib",
+        "engine": "best_model_fd001_compressed.joblib",   # 👈 compressed version
         "scaler_engine": "scaler_fd001.joblib",
         "hydraulics": "agg_best_model.joblib",
         "landing_gear": "best_rul_model_top3.joblib",
@@ -40,9 +41,22 @@ def load_model(name: str, models_dir: Path):
     if not model_path.exists():
         raise FileNotFoundError(f"Model file not found: {model_path}")
 
+    # ✅ Lazy-load only when needed, no global caching for engine
+    if name == "engine":
+        print(f"[ENGINE] Loading compressed engine model from {model_path}")
+        model = joblib.load(model_path)
+        return model
+
+    # Keep hydraulics & gear cached (they’re lightweight)
     if name not in _cached:
         print(f"[MODEL] Loading {name} from {model_path}")
         loaded = joblib.load(model_path)
         _cached[name] = loaded.get("model", loaded) if isinstance(loaded, dict) else loaded
 
     return _cached[name]
+
+
+def unload_model(model):
+    """Free memory after prediction (for engine model)."""
+    del model
+    gc.collect()

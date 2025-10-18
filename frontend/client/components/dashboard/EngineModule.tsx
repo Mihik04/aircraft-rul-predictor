@@ -63,8 +63,7 @@ const engineFields: EngineFieldConfig[] = [
     placeholder: "540",
   },
 ];
-
-const ENGINE_ENDPOINT = "http://127.0.0.1:5000/predict/engine";
+const ENGINE_ENDPOINT = "predict/engine";
 
 const EngineModule = () => {
   const [formState, setFormState] = useState<Record<keyof EnginePayload, string>>({

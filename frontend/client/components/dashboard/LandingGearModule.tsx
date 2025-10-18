@@ -42,7 +42,7 @@ const landingGearFields: LandingGearFieldConfig[] = [
   },
 ];
 
-const LANDING_GEAR_ENDPOINT = "http://127.0.0.1:5000/predict/landing-gear";
+const LANDING_GEAR_ENDPOINT = "predict/landing-gear";
 
 const LandingGearModule = () => {
   const [formState, setFormState] = useState<Record<keyof LandingGearPayload, string>>({

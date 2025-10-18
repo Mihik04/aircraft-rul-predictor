@@ -37,7 +37,7 @@ const hydraulicsFields: HydraulicsFieldConfig[] = [
   { name: "TS3_mean", label: "TS3 Mean", unit: "°C", placeholder: "118" },
 ];
 
-const HYDRAULICS_ENDPOINT = "http://127.0.0.1:5000/predict/hydraulics";
+const HYDRAULICS_ENDPOINT = "predict/hydraulics";
 
 const HydraulicsModule = () => {
   const [formState, setFormState] = useState<Record<keyof HydraulicsPayload, string>>({
