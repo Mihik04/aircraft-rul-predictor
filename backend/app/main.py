@@ -24,7 +24,11 @@ app = FastAPI(title="Aircraft Subsystem RUL API", version="1.0.0")
 # ---------- CORS ----------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # allow all for dev
+    allow_origins=[
+        "*", 
+        "http://127.0.0.1:4173",  # local frontend
+        "https://your-frontend-url.vercel.app",  # if deployed on Vercel
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
