@@ -9,3 +9,4 @@ python-multipart==0.0.9
 pydantic==2.6.3
 lightgbm==4.5.0        
 requests==2.32.3
+psutil==6.0.0
