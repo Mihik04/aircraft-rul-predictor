@@ -50,15 +50,29 @@ def health():
 
 
 # ---------- ENGINE ----------
-import psutil, os
+@app.post("/predict/engine", response_model=RULResponse)
+def predict_engine(payload: EngineInput):
+    try:
+        log_memory("Before loading engine")
 
-def log_memory(tag=""):
-    """Logs current process memory usage in MB for debugging."""
-    process = psutil.Process(os.getpid())
-    mem_mb = process.memory_info().rss / (1024 * 1024)
-    print(f"[MEMORY] {tag} → {mem_mb:.2f} MB used")
-    if mem_mb > 480:
-        print("⚠️ [WARNING] Memory usage is near Render free limit (512MB)!")
+        # ✅ Load model temporarily
+        model = load_model("engine", MODELS_DIR)
+        log_memory("After loading engine")
+
+        x = engine_to_array(payload).reshape(1, -1)
+        y = float(model.predict(x)[0])
+
+        # ✅ Free model from memory
+        from .models_loader import unload_model
+        unload_model(model)
+        log_memory("After unloading engine")
+
+        return RULResponse(predicted_rul=y, model_version="best_model_fd001_compressed")
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=400, detail=str(e))
 
 # ---------- HYDRAULICS ----------
 @app.post("/predict/hydraulics", response_model=RULResponse)
