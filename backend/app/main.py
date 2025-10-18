@@ -53,26 +53,24 @@ def health():
 @app.post("/predict/engine", response_model=RULResponse)
 def predict_engine(payload: EngineInput):
     try:
-        log_memory("Before loading engine")
+        from .models_loader import unload_model
+        log_memory("Before load")
 
-        # ✅ Load model temporarily
         model = load_model("engine", MODELS_DIR)
-        log_memory("After loading engine")
+        log_memory("After load")
 
         x = engine_to_array(payload).reshape(1, -1)
         y = float(model.predict(x)[0])
 
-        # ✅ Free model from memory
-        from .models_loader import unload_model
         unload_model(model)
-        log_memory("After unloading engine")
+        log_memory("After unload")
 
         return RULResponse(predicted_rul=y, model_version="best_model_fd001_compressed")
 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        import traceback; traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
+
 
 # ---------- HYDRAULICS ----------
 @app.post("/predict/hydraulics", response_model=RULResponse)
