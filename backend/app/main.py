@@ -12,6 +12,16 @@ from .schemas import (
 from .models_loader import load_model
 from .inference import engine_to_array, hyd_to_array, lg_to_array
 import pandas as pd
+import psutil, os
+
+def log_memory(tag=""):
+    """Logs current process memory usage in MB for debugging."""
+    process = psutil.Process(os.getpid())
+    mem_mb = process.memory_info().rss / (1024 * 1024)
+    print(f"[MEMORY] {tag} → {mem_mb:.2f} MB used")
+    if mem_mb > 480:
+        print("⚠️ [WARNING] Memory usage is near Render free limit (512MB)!")
+
 
 # Cache models so they load only once (lazy loading)
 _model_cache = {}
@@ -40,32 +50,15 @@ def health():
 
 
 # ---------- ENGINE ----------
-@app.post("/predict/engine", response_model=RULResponse)
-def predict_engine(payload: EngineInput):
-    try:
-        # ✅ Load model temporarily
-        model = load_model("engine", MODELS_DIR)
-        x = engine_to_array(payload).reshape(1, -1)
+import psutil, os
 
-        print("\n--- ENGINE DEBUG ---")
-        print("Payload keys:", list(payload.model_dump().keys())[:10])
-        print("Input array shape:", x.shape)
-        print("First 5 scaled values:", x[0][:5])
-
-        y = float(model.predict(x)[0])
-        print("Predicted RUL:", y)
-        print("---------------------\n")
-
-        # ✅ Free model from memory
-        from .models_loader import unload_model
-        unload_model(model)
-
-        return RULResponse(predicted_rul=y, model_version="best_model_fd001_compressed")
-
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=400, detail=str(e))
+def log_memory(tag=""):
+    """Logs current process memory usage in MB for debugging."""
+    process = psutil.Process(os.getpid())
+    mem_mb = process.memory_info().rss / (1024 * 1024)
+    print(f"[MEMORY] {tag} → {mem_mb:.2f} MB used")
+    if mem_mb > 480:
+        print("⚠️ [WARNING] Memory usage is near Render free limit (512MB)!")
 
 # ---------- HYDRAULICS ----------
 @app.post("/predict/hydraulics", response_model=RULResponse)
