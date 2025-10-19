@@ -3,6 +3,7 @@ import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import requests
+HUGGINGFACE_ENGINE_API = "https://mihik12-aircraft-engine-rul.hf.space/predict/engine"
 
 from .schemas import (
     EngineInput, EngineBatch,
