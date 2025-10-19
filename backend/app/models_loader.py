@@ -3,7 +3,8 @@ import joblib, requests, gc
 
 _cached = {}
 HF_ENGINE_MODEL_URL = "https://huggingface.co/mihik12/aircraft-rul-models/resolve/main/best_model_fd001_compressed.joblib"
-LOCAL_ENGINE_MODEL = Path("/app/models/best_model_fd001_compressed.joblib")  # permanent cache
+LOCAL_ENGINE_MODEL = Path("/app/backend/models/best_model_fd001_compressed.joblib")
+ # permanent cache
 
 def download_if_missing():
     """Download compressed engine model once (if missing)."""
