@@ -2,6 +2,7 @@ from pathlib import Path
 import numpy as np
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import requests
 
 from .schemas import (
     EngineInput, EngineBatch,
