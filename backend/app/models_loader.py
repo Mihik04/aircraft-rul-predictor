@@ -33,9 +33,10 @@ def load_model(name: str, models_dir: Path):
 
     if name == "engine":
         download_if_missing()
-        print("[ENGINE] Loading with mmap_mode='r' to reduce RAM...")
-        model = joblib.load(LOCAL_ENGINE_MODEL, mmap_mode="r")
+        print("[ENGINE] Loading compressed engine model (no mmap)...")
+        model = joblib.load(LOCAL_ENGINE_MODEL)
         return model
+
 
     path = mapping[name]
     if not path.exists():
