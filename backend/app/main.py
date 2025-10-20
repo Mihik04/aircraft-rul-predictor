@@ -115,7 +115,7 @@ def predict_hydraulics(payload: HydraulicsInput):
 
         print(f"[HYD STABLE SCALE] raw={y_raw}, scaled={y_scaled}")
 
-        return RULResponse(predicted_rul=y_scaled, model_version="agg_best_model")
+        return RULResponse(predicted_rul=y_raw, model_version="agg_best_model")
 
     except Exception as e:
         import traceback
