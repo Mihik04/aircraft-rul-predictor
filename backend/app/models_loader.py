@@ -1,10 +1,10 @@
 from pathlib import Path
 import joblib, requests, io, gc
 
-# 🔒 Cache small models in memory (hydraulics + landing gear)
+# 🔒 Cache for small models
 _cached = {}
 
-# ✅ Hugging Face URLs for all models
+# ✅ Hugging Face model links
 HF_MODELS = {
     "engine": "https://huggingface.co/mihik12/aircraft-rul-models/resolve/main/best_model_fd001_compressed.joblib",
     "scaler_engine": "https://huggingface.co/mihik12/aircraft-rul-models/resolve/main/scaler_fd001.joblib",
@@ -13,9 +13,9 @@ HF_MODELS = {
 }
 
 
-# ------------------- STREAMING HELPER -------------------
+# ------------------- STREAM LOAD HELPER -------------------
 def stream_load_joblib(url: str):
-    """Load a .joblib file from Hugging Face directly into memory (no temp file)."""
+    """Stream and load .joblib model directly from Hugging Face."""
     print(f"[MODEL] Streaming from {url} ...")
     with requests.get(url, stream=True, timeout=60) as r:
         r.raise_for_status()
@@ -30,33 +30,41 @@ def stream_load_joblib(url: str):
     return model
 
 
-# ------------------- LOADER FUNCTION -------------------
+# ------------------- LOAD MODEL -------------------
 def load_model(name: str, models_dir: Path = None):
-    """Load model dynamically, streaming large ones, caching small ones."""
+    """Load models dynamically; cache only smaller ones."""
     if name not in HF_MODELS:
         raise ValueError(f"Unknown model name: {name}")
 
-    # 🧠 Engine model (large): Stream fresh each time to save memory
+    # ENGINE: streamed fresh each time to save memory
     if name == "engine":
         print("[ENGINE] Loading model from Hugging Face stream...")
         return stream_load_joblib(HF_MODELS[name])
 
-    # 🧠 Scaler (small): Cached globally
-    if name == "scaler_engine":
-        if "scaler_engine" not in _cached:
-            _cached["scaler_engine"] = stream_load_joblib(HF_MODELS["scaler_engine"])
-        return _cached["scaler_engine"]
+    # SCALER + HYDRAULICS: cached and unwrap if dict
+    if name in ["scaler_engine", "hydraulics"]:
+        if name not in _cached:
+            print(f"[CACHE] Loading {name} model into memory (one-time load)...")
+            loaded = stream_load_joblib(HF_MODELS[name])
+            # 🧩 Fix for dict-wrapped models
+            if isinstance(loaded, dict) and "model" in loaded:
+                loaded = loaded["model"]
+            _cached[name] = loaded
+        return _cached[name]
 
-    # 🧠 Hydraulics + Landing Gear: Cached once
-    if name not in _cached:
-        print(f"[CACHE] Loading {name} model into memory (one-time load)...")
-        _cached[name] = stream_load_joblib(HF_MODELS[name])
-    return _cached[name]
+    # LANDING GEAR: cached directly
+    if name == "landing_gear":
+        if "landing_gear" not in _cached:
+            print(f"[CACHE] Loading landing gear model into memory (one-time load)...")
+            _cached["landing_gear"] = stream_load_joblib(HF_MODELS["landing_gear"])
+        return _cached["landing_gear"]
+
+    raise ValueError(f"Invalid model name: {name}")
 
 
-# ------------------- UNLOAD FUNCTION -------------------
+# ------------------- UNLOAD MODEL -------------------
 def unload_model(model):
-    """Unload large model (engine) from memory after prediction."""
+    """Free up memory for large model (engine)."""
     del model
     gc.collect()
     print("[ENGINE] Model unloaded from memory.")
