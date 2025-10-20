@@ -83,9 +83,9 @@ def predict_engine(payload: EngineInput):
 @app.post("/predict/hydraulics", response_model=RULResponse)
 def predict_hydraulics(payload: HydraulicsInput):
     """
-    Stable + Scaled Hydraulics RUL prediction.
-    ✅ Always same output for same input (no memory drift)
-    ✅ Still produces nicely normalized values for display
+    Stable, deterministic Hydraulics RUL prediction.
+    ✅ Same input → exact same output (no floating variance)
+    ✅ Includes clean scaling for visualization
     """
     try:
         import numpy as np
@@ -94,27 +94,26 @@ def predict_hydraulics(payload: HydraulicsInput):
         model = load_model("hydraulics", MODELS_DIR)
         x = hyd_to_array(payload).reshape(1, -1)
 
-        # Debug info (optional)
+        # Debug info
         print("\n--- HYD DEBUG ---")
         print("Input shape:", x.shape)
         print("First 5 values:", x[0][:5])
 
-        # Predict the raw RUL
+        # Predict raw RUL
         y_raw = float(model.predict(x)[0])
+        y_raw = round(y_raw, 4)  # 🧭 round to 4 decimals for stable math
         print(f"Predicted RUL (raw): {y_raw}")
         print("-----------------\n")
 
-        # ✅ Stable scaling (no historical drift)
-        # Normalizing based on fixed expected range of RUL values
-        # You can tweak these based on model characteristics
-        MIN_RUL = 80
-        MAX_RUL = 120
+        # ✅ Fixed scaling range for visualization (deterministic)
+        MIN_RUL = 80.0
+        MAX_RUL = 120.0
 
-        # Map raw model outputs into a consistent scale for display
+        # Stable interpolation using deterministic float precision
         y_scaled = np.interp(y_raw, [MIN_RUL, MAX_RUL], [60, 120])
-        y_scaled = round(float(np.clip(y_scaled, 60, 120)), 2)
+        y_scaled = round(float(y_scaled), 2)
 
-        print(f"[HYD STABLE SCALE] raw={y_raw:.2f}, scaled={y_scaled:.2f}")
+        print(f"[HYD STABLE SCALE] raw={y_raw}, scaled={y_scaled}")
 
         return RULResponse(predicted_rul=y_scaled, model_version="agg_best_model")
 
@@ -122,6 +121,7 @@ def predict_hydraulics(payload: HydraulicsInput):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
+
 
 # ---------- LANDING GEAR ----------
 @app.post("/predict/landing-gear", response_model=RULResponse)
