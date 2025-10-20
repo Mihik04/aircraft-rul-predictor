@@ -2,21 +2,11 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  root: ".", // Ensures Vite serves index.html from /frontend
+  root: ".", // Ensures index.html served correctly
   server: {
     host: "127.0.0.1",
-    port: 8080,
-    fs: {
-      allow: [
-        // ✅ Add the frontend root itself
-        path.resolve(__dirname, "."),
-        path.resolve(__dirname, "./client"),
-        path.resolve(__dirname, "./shared"),
-      ],
-      deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
-    },
+    port: 4173, // ✅ Default Vite dev port
   },
   build: {
     outDir: "dist",
@@ -27,5 +17,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./client"),
       "@shared": path.resolve(__dirname, "./shared"),
     },
+  },
+  define: {
+    // ✅ Ensure environment variables are accessible
+    "process.env": process.env,
   },
 });
