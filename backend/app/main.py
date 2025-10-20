@@ -39,7 +39,7 @@ app.add_middleware(
     allow_origins=[
         "*", 
         "http://127.0.0.1:4173",  # local frontend
-        "https://your-frontend-url.vercel.app",  # if deployed on Vercel
+        "https://aircraft-rul-predictor.vercel.app",  # if deployed on Vercel
     ],
     allow_credentials=True,
     allow_methods=["*"],
