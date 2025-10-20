@@ -148,3 +148,7 @@ def predict_landing_gear(payload: LandingGearInput):
     except Exception as e:
         import traceback; traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
+# ---------- ROOT / HOME ----------
+@app.get("/")
+def root():
+    return {"status": "ok", "message": "Aircraft RUL API running on Render 🚀"}
