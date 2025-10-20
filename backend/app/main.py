@@ -78,31 +78,50 @@ def predict_engine(payload: EngineInput):
     except Exception as e:
         print(f"[FORWARD ❌] Hugging Face request failed: {e}")
         raise HTTPException(status_code=400, detail=f"Hugging Face proxy failed: {e}")
+
 # ---------- HYDRAULICS ----------
 @app.post("/predict/hydraulics", response_model=RULResponse)
 def predict_hydraulics(payload: HydraulicsInput):
+    """
+    Stable + Scaled Hydraulics RUL prediction.
+    ✅ Always same output for same input (no memory drift)
+    ✅ Still produces nicely normalized values for display
+    """
     try:
+        import numpy as np
+
+        # Load model and prepare data
         model = load_model("hydraulics", MODELS_DIR)
         x = hyd_to_array(payload).reshape(1, -1)
 
-        # 🧠 Debug block (kept for visibility)
+        # Debug info (optional)
         print("\n--- HYD DEBUG ---")
         print("Input shape:", x.shape)
         print("First 5 values:", x[0][:5])
-        
-        # Predict raw RUL
-        y = float(model.predict(x)[0])
-        print(f"Predicted RUL (raw): {y}")
+
+        # Predict the raw RUL
+        y_raw = float(model.predict(x)[0])
+        print(f"Predicted RUL (raw): {y_raw}")
         print("-----------------\n")
 
-        # ✅ Return raw, unscaled value (same as local behavior)
-        return RULResponse(predicted_rul=round(y, 2), model_version="agg_best_model")
+        # ✅ Stable scaling (no historical drift)
+        # Normalizing based on fixed expected range of RUL values
+        # You can tweak these based on model characteristics
+        MIN_RUL = 80
+        MAX_RUL = 120
+
+        # Map raw model outputs into a consistent scale for display
+        y_scaled = np.interp(y_raw, [MIN_RUL, MAX_RUL], [60, 120])
+        y_scaled = round(float(np.clip(y_scaled, 60, 120)), 2)
+
+        print(f"[HYD STABLE SCALE] raw={y_raw:.2f}, scaled={y_scaled:.2f}")
+
+        return RULResponse(predicted_rul=y_scaled, model_version="agg_best_model")
 
     except Exception as e:
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
-
 
 # ---------- LANDING GEAR ----------
 @app.post("/predict/landing-gear", response_model=RULResponse)
