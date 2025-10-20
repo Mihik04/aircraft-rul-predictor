@@ -85,23 +85,18 @@ def predict_hydraulics(payload: HydraulicsInput):
         model = load_model("hydraulics", MODELS_DIR)
         x = hyd_to_array(payload).reshape(1, -1)
 
-        # 🧠 Debug block
+        # 🧠 Debug block (kept for visibility)
         print("\n--- HYD DEBUG ---")
         print("Input shape:", x.shape)
         print("First 5 values:", x[0][:5])
+        
+        # Predict raw RUL
         y = float(model.predict(x)[0])
-        print("Predicted RUL (raw):", y)
+        print(f"Predicted RUL (raw): {y}")
         print("-----------------\n")
 
-        # --- SIMPLE STABLE SCALING (consistent output for same input) ---
-        # Fixed scaling range for visualization: [80, 120] -> [60, 120]
-        y_scaled = np.interp(y, [80, 120], [60, 120])
-        y_scaled = round(float(np.clip(y_scaled, 60, 120)), 2)
-
-        print(f"[HYD FIXED SCALE] raw={y:.2f}, scaled={y_scaled:.2f}")
-        # ---------------------------------------------------------------
-
-        return RULResponse(predicted_rul=y_scaled, model_version="agg_best_model")
+        # ✅ Return raw, unscaled value (same as local behavior)
+        return RULResponse(predicted_rul=round(y, 2), model_version="agg_best_model")
 
     except Exception as e:
         import traceback
