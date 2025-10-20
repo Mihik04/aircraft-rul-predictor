@@ -93,33 +93,13 @@ def predict_hydraulics(payload: HydraulicsInput):
         print("Predicted RUL (raw):", y)
         print("-----------------\n")
 
-        # --- SMART HYDRAULIC RUL AUTO-NORMALIZATION ---
-        import numpy as np
-
-        # Keep short history of recent hydraulics predictions
-        if not hasattr(predict_hydraulics, "rul_history"):
-            predict_hydraulics.rul_history = []
-
-        predict_hydraulics.rul_history.append(y)
-
-        # Keep only the last 100 predictions
-        if len(predict_hydraulics.rul_history) > 100:
-            predict_hydraulics.rul_history.pop(0)
-
-        # Compute dynamic range (mean ± std)
-        mean_rul = np.mean(predict_hydraulics.rul_history)
-        std_rul = np.std(predict_hydraulics.rul_history)
-
-        # Dynamic scaling bounds
-        low_bound = max(80, mean_rul - 2 * std_rul)
-        high_bound = min(120, mean_rul + 2 * std_rul)
-
-        # Rescale RUL into [60, 120] range for visualization
-        y_scaled = np.interp(y, [low_bound, high_bound], [60, 120])
+        # --- SIMPLE STABLE SCALING (consistent output for same input) ---
+        # Fixed scaling range for visualization: [80, 120] -> [60, 120]
+        y_scaled = np.interp(y, [80, 120], [60, 120])
         y_scaled = round(float(np.clip(y_scaled, 60, 120)), 2)
 
-        print(f"[HYD SMART SCALE] raw={y:.2f}, mean={mean_rul:.2f}, std={std_rul:.2f}, scaled={y_scaled:.2f}")
-        # -------------------------------------------------------------
+        print(f"[HYD FIXED SCALE] raw={y:.2f}, scaled={y_scaled:.2f}")
+        # ---------------------------------------------------------------
 
         return RULResponse(predicted_rul=y_scaled, model_version="agg_best_model")
 
